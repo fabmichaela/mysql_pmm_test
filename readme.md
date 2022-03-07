@@ -1,6 +1,9 @@
 # docker-compose
 docker compose up -d
 
+* ref : https://github.com/chrodriguez/mysql-gtid-test
+
+
 # replication setting
 ## one(master): create replication user
 ```
