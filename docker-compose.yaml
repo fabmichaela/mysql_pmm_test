@@ -1,0 +1,76 @@
+version: '3'
+services:
+  one:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+    volumes:
+      - one:/var/lib/mysql
+    ports:
+      - 3301:3306
+    command:
+    - --server-id=1
+    - --gtid-mode=ON
+    - --enforce-gtid-consistency=ON
+    - --master-info-repository=TABLE
+    - --relay-log-info-repository=TABLE
+    - --binlog-checksum=NONE
+    - --log-slave-updates=ON
+    - --log-bin=binlog
+    - --binlog-format=ROW
+    - --default-authentication-plugin=mysql_native_password
+
+  two:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+    volumes:
+      - two:/var/lib/mysql
+    ports:
+      - 3302:3306
+    command:
+    - --server-id=2
+    - --gtid-mode=ON
+    - --enforce-gtid-consistency=ON
+    - --master-info-repository=TABLE
+    - --relay-log-info-repository=TABLE
+    - --binlog-checksum=NONE
+    - --log-slave-updates=ON
+    - --log-bin=binlog
+    - --binlog-format=ROW
+  pmm-server:
+    image: percona/pmm-server:2
+    ports:
+      - 8081:80
+    environment:
+      SERVER_USER: admin
+      SERVER_PASSWORD: admin
+    restart: always
+    volumes:
+      - pmm-data:/srv
+  pmm-client:
+    image: percona/pmm-client:2
+    restart: always
+    ports:
+      - "42000:42000"
+      - "42001:42001"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    volumes:
+      - ./pmm-agent.yaml:/etc/pmm-agent.yaml
+      - pmm-client-data:/srv
+    environment:
+      - PMM_AGENT_CONFIG_FILE=/etc/pmm-agent.yaml
+      - PMM_AGENT_SERVER_USERNAME=admin
+      - PMM_AGENT_SERVER_PASSWORD=admin
+      - PMM_AGENT_SERVER_ADDRESS=pmm-server:443
+      - PMM_AGENT_SERVER_INSECURE_TLS=true
+      # - PMM_AGENT_SETUP=1 ## used at first setup only
+volumes:
+  one:
+  two:
+  pmm-data:
+  pmm-client-data:
