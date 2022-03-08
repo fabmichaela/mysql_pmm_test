@@ -27,7 +27,7 @@ show slave status \G
 ## monitoring using pmm
 ### create pmm-agnet.yaml
 ```
-touch pmm-agent.yamlvi
+touch pmm-agent.yaml
 chmod 0666 pmm-agent.yaml
 ```
 
