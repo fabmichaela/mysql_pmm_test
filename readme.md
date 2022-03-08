@@ -1,6 +1,6 @@
 # Setting up MySQL replication and PMM test environment
-## docker-compose
-docker compose up -d
+## start mysql instances
+docker compose up one two -d
 
 * ref : https://github.com/chrodriguez/mysql-gtid-test
 
@@ -25,6 +25,12 @@ show slave status \G
 
 
 ## monitoring using pmm
+### create pmm-agnet.yaml
+```
+touch pmm-agent.yamlvi
+chmod 0666 pmm-agent.yaml
+```
+
 ### one(master): create pmm user
 ```
 mysql -uroot -ptest -h127.0.0.1 -P3301
@@ -34,12 +40,16 @@ GRANT SELECT, PROCESS, REPLICATION CLIENT, RELOAD, BACKUP_ADMIN ON *.* TO 'pmm'@
 
 ### pmm-admin add
 ```
-docker exec mysql-replication_pmm-client_1 \
+docker exec mysql-replication-pmm-client-1 \
 pmm-admin add mysql --cluster=my80replication --replication-set=my80replication --username=pmm --password=pmm --query-source=perfschema  --service-name=one --host=one --port=3306
 
-docker exec mysql-replication_pmm-client_1 \
+docker exec mysql-replication-pmm-client-1 \
 pmm-admin add mysql --cluster=my80replication --replication-set=my80replication --username=pmm --password=pmm --query-source=perfschema --service-name=two --host=two --port=3306
 ```
+
+## start pmm
+docker compose up pmm-server pmm-client -d
+
 
 ### comment out PMM_AGENT_SETUP=1 on docker-compose.yaml
 ```
